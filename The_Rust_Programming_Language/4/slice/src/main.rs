@@ -62,12 +62,10 @@ fn first_word(s: &str) -> usize {
 // 返回字符串的slice
 fn _first_word(s: &str) -> &str {
     let bytes = s.as_bytes();
-
     for (i, &item) in bytes.iter().enumerate() {
         if item == b' ' {
             return &s[0..i];
         }
     }
-
     &s[..]
 }
