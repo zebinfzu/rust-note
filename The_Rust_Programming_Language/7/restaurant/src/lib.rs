@@ -1,7 +1,7 @@
 #![allow(unused)]
 mod front_of_house {
-    mod hosting {
-        fn add_to_waitlist() {}
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
 
         fn seat_at_table() {}
     }
@@ -83,3 +83,29 @@ pub fn eat_at_restaurant_2() {
     let order1 = back_of_house::Appetizer::Soup;
     let order2 = back_of_house::Appetizer::Salad;
 }
+
+// 使用use关键字将路径引入作用域
+use crate::front_of_house::serving;
+
+pub fn eat_at_restaurant_3() {
+    serving::take_order();
+}
+
+// 使用pub use导出
+pub use crate::front_of_house::hosting;
+// 外部代码可以通过新路径restaurant::hosting::add_to_waitlist来使用函数
+// 否则只能使用restaurant::front_of_house::hosting::add_to_waitlist
+
+// 使用路径嵌套来消除多余的use行
+// use std::cmp::Ordering;
+// use std::io;
+// 改为
+// use std::{cmp::Ordering, io};
+
+// use std::io;
+// use std::io::Write;
+// 改为
+// use std::io::{self, Write};
+
+// 通过glob运算符引入所有的公有定义
+use std::collections::*;
