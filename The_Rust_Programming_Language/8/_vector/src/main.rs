@@ -1,7 +1,7 @@
 #![allow(unused)]
 fn main() {
+    // 创建vector，注意不创建mut的vector的话是不能再修改内部元素的
     {
-        // 新建vector
         //  1. new 关联函数
         let v: Vec<i32> = Vec::new();
         // 2. !vec[]宏
@@ -18,7 +18,7 @@ fn main() {
         // 1. 索引语法
         let third: &i32 = &v[2];
         println!("The third element is {}", third);
-        // 2. get方法
+        // 2. get方法 推荐的方法
         match v.get(2) {
             Some(third) => println!("The third element is {}", third),
             None => println!("There is no third element."),
@@ -27,6 +27,7 @@ fn main() {
         // 索引会出现越界时导致程序panic的问题
         // get方法则返回Option<T>，因此不会导致程序panic，越界访问会返回None
     }
+    // 遵循引用的规则
     {
         // 遵循移动，拷贝，复制的规则
         let mut v = vec![1, 2, 3, 4, 5];
@@ -40,12 +41,12 @@ fn main() {
         v.push(6);
     }
     {
-        // 遍历
+        // 不可变的遍历
         let v = vec![100, 32, 57];
         for i in &v {
             println!("{}", i);
         }
-        // 遍历的同时要修改值
+        // 可变遍历
         let mut v = vec![100, 32, 57];
         for i in &mut v {
             *i += 50;
@@ -66,5 +67,11 @@ fn main() {
             SpreadsheetCell::Float(10.12),
         ];
         // 如果需要运行时才知道元素确切类型的，枚举就没办法了，需要使用trait对象
+    }
+    // 元素更新
+    {
+        let mut v = vec![1, 2, 3, 4];
+        v.push(1);
+        v.pop();
     }
 }
