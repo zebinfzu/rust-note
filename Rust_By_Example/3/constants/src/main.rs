@@ -1,4 +1,7 @@
+// 全局变量声明在所有其他作用域之外
+// static 具有'static 生命周期，可以是可变的变量，需要使用static mut 声明
 static LANGUAGE: &'static str = "Rust";
+// const 不可变的值
 const THRESHOLD: i32 = 10;
 
 fn is_big(n: i32) -> bool {
