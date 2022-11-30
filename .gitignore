@@ -1,3 +1,7 @@
 **/Cargo.lock
 **/target
 **/dist
+
+**/styles/*.css
+
+**/node_modules
