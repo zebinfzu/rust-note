@@ -25,5 +25,9 @@ fn main() {
         fn forever() -> ! {
             loop {};
         }
+        fn foo() -> ! {
+            unimplemented!(); // 标记为未不在这里实现的
+            todo!(); // 标记为待实现的
+        }
     }
 }
