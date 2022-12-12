@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 #[allow(unused)]
 fn main() {
     // 1. 关联类型
@@ -45,5 +47,114 @@ fn main() {
                 1
             }
         }
+    }
+    // 2. 默认泛型类型参数
+    {
+        // 例如Add特征
+        // trait Add<RHS = Self> {
+        //     type Output;
+        //     fn add(self, rhs: RHS) -> Self::output;
+        // }
+
+        #[derive(Debug, PartialEq)]
+        struct Point {
+            x: i32,
+            y: i32,
+        }
+
+        impl Add for Point {
+            type Output = Point;
+
+            fn add(self, rhs: Self) -> Point {
+                Point {
+                    x: self.x + rhs.x,
+                    y: self.y + rhs.y,
+                }
+            }
+        }
+        // 实现Add特征提供了运算符重载，对于Point类型可以使用+运算符了，操作符左右必须都是Point
+        println!("{:?}", Point { x: 1, y: 0 } + Point { x: 1, y: 2 });
+
+        // 重载两个不同类型的相加
+        #[derive(Debug)]
+        struct Millimeters(u32);
+
+        struct Meters(u32);
+
+        impl Add<Meters> for Millimeters {
+            type Output = Millimeters;
+            fn add(self, rhs: Meters) -> Self::Output {
+                Millimeters(self.0 + (rhs.0 * 1000))
+            }
+        }
+
+        println!("{:?}", Millimeters(10) + Meters(10));
+    }
+    // 3. 调用同名方法
+    {
+        // 不同特征拥有同名的方法
+
+        trait Pilot {
+            fn fly(&self);
+        }
+
+        trait Wizard {
+            fn fly(&self);
+        }
+
+        struct Human;
+
+        impl Pilot for Human {
+            fn fly(&self) {
+                println!("This is your captain speaking.");
+            }
+        }
+
+        impl Wizard for Human {
+            fn fly(&self) {
+                println!("Up!");
+            }
+        }
+
+        impl Human {
+            fn fly(&self) {
+                println!("*waving arms furiously*");
+            }
+        }
+
+        // 优先调用类型上面的方法
+        let person = Human;
+        person.fly();
+
+        // 通过特征显式调用特征的方法
+        Pilot::fly(&person);
+
+        Wizard::fly(&person);
+
+        // 但是如果方法没有self参数，即方法是关联函数的时候
+
+        trait Animal {
+            fn baby_name() -> String;
+        }
+
+        struct Dog;
+
+        impl Dog {
+            fn baby_name() -> String {
+                String::from("Spot")
+            }
+        }
+
+        impl Animal for Dog {
+            fn baby_name() -> String {
+                String::from("puppy")
+            }
+        }
+
+        println!("A baby dog is called a {}", Dog::baby_name());
+        // println!("A baby dog is called a {}", Animal::baby_name()); // 这样是不行的，因为Animal的baby_name方法不是一个具体的限定，编译器不知道要调哪一个
+        
+        // 使用完全限定语法 通过 as 关键字提供准确的类型注解
+        println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
     }
 }
