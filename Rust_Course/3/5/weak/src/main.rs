@@ -1,4 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::RefCell,
+    rc::{Rc, Weak},
+};
 #[allow(unused)]
 fn main() {
     // 1. rust同样会导致内存泄漏
@@ -67,5 +70,61 @@ fn main() {
         // Weak引用资源不存在了，此时返回none
         let strong_five: Option<Rc<_>> = weak_five.upgrade();
         assert_eq!(strong_five, None);
+    }
+
+    // 3. 模拟真实情况下使用Weak解决循环引用
+    {
+        // 主人
+        struct Owner {
+            name: String,
+            // 保存工具的时候不要存Rc而是存Weak，因为Weak不会增加引用计数，这样就不会导致循环引用
+            gadgets: RefCell<Vec<Weak<Gadget>>>,
+        }
+
+        // 工具
+        struct Gadget {
+            id: i32,
+            owner: Rc<Owner>,
+        }
+
+        // 创建一个Owner
+        // 注意主人可以拥有多个工具
+        let gadget_owner: Rc<Owner> = Rc::new(Owner {
+            name: "Gadget man".to_string(),
+            gadgets: RefCell::new(Vec::new()),
+        });
+
+        
+        println!("创建两个工具之前，拥有者的引用计数是{}", Rc::strong_count(&gadget_owner));
+        // 创建工具，并且与主人关联
+        let gadget1 = Rc::new(Gadget {
+            id: 1,
+            owner: gadget_owner.clone(),
+        });
+        let gadget2 = Rc::new(Gadget {
+            id: 2,
+            owner: gadget_owner.clone(),
+        });
+
+        println!("创建两个工具之后，拥有者的引用计数是{}", Rc::strong_count(&gadget_owner));
+        // 为主人更新所拥有的工具
+        // 因为之前使用了Rc，所以要使用Weak，不然就会导致循环引用
+        gadget_owner
+            .gadgets
+            .borrow_mut()
+            .push(Rc::downgrade(&gadget1));
+        gadget_owner
+            .gadgets
+            .borrow_mut()
+            .push(Rc::downgrade(&gadget2));
+
+        println!("将工具加入到所有者的工具数组字段后，工具的引用计数是{}", Rc::strong_count(&gadget1));
+        // 遍历主人拥有的工具字段
+        for gadget_opt in gadget_owner.gadgets.borrow().iter() {
+            // gadget_opt是一个Weak<Gadget>
+            // Weak不能保证数据一定存在，因此要显式调用upgrade()
+            let gadget = gadget_opt.upgrade().unwrap();
+            println!("Gadget {} owned by {}", gadget.id, gadget.owner.name);
+        }
     }
 }
